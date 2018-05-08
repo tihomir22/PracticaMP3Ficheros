@@ -12,7 +12,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +36,11 @@ public class PracticaMP3Ficheros {
         DataInputStream in;
         DataOutputStream out;
         File[] listaFich;
-        String ruta, datos, titulo;
+        String ruta, datos, nombre;
         Scanner teclado = new Scanner(System.in);
+
+        File eliminar = new File("catalogo.csv");
+        eliminar.delete();
         do {
             mostrarMenu();
             opcion = teclado.nextInt();
@@ -51,17 +57,44 @@ public class PracticaMP3Ficheros {
                             if (listaFich[i].isDirectory()) {//si encontramos un directorio dentro de la ruta absoluta...          
                                 recorrerSubdirectorio(ruta, listaFich[i].getName());
                             } else {
-                                System.out.println("fichero encontrado" + "\t" + listaFich[i].getName());
+                                //System.out.println("fichero encontrado" + "\t" + listaFich[i].getName());
                                 if (obtenerFormato(listaFich[i].getName()).equalsIgnoreCase("3pm")) {
                                     try {
-                                        System.out.println("Y ADEMAS FORMATO MP3, WOMBO COMBOOOOO!!!");
+                                        // System.out.println("Y ADEMAS FORMATO MP3, WOMBO COMBOOOOO!!!");
                                         skip = (listaFich[i].length() - 125);
                                         in = new DataInputStream(new FileInputStream(listaFich[i]));
+
+                                        PrintWriter escritura = new PrintWriter(new FileOutputStream("catalogo.csv", true));
                                         in.skip(skip);
                                         datos = in.readLine();
-                                        titulo = datos.substring(0, 30);
-                                        System.out.println(titulo);
+                                        String titulo = datos.substring(0, 30);
+                                        if (titulo.isEmpty()) {
+                                            titulo = "DESCONOCIDO";
+                                        }
+                                        String artista = datos.substring(30, 60);
+                                        if (artista.isEmpty()) {
+                                            artista = "DESCONOCIDO";
+                                        }
+                                        String album = datos.substring(60, 90);
+                                        if (album.isEmpty()) {
+                                            album = "DESCONOCIDO";
+                                        }
+                                        String anyo = datos.substring(90, 94);
+                                        if (anyo.isEmpty()) {
+                                            anyo = "DESCONOCIDO";
+                                        }
+                                        String coment = datos.substring(94, 124);
+                                        if (coment.isEmpty()) {
+                                            coment = "DESCONOCIDO";
+                                        }
+                                        String genero = datos.substring(125);
+                                        if (genero.isEmpty()) {
+                                            genero = "DESCONOCIDO";
+                                        }
 
+                                        escritura.append(listaFich[i].getAbsolutePath() + ";" + listaFich[i].getParent() + ";" + titulo + ";" + artista + ";" + album + ";" + anyo + ";" + coment + ";" + genero + ";");
+                                        escritura.close();
+                                        System.out.println("Escrito exitosamente en archivo");
                                     } catch (FileNotFoundException ex) {
                                         Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
                                     } catch (IOException ex) {
@@ -77,9 +110,16 @@ public class PracticaMP3Ficheros {
                     break;
 
                 case 2:
+                    System.out.println("Introduzca nombre de cancion a buscar,SOLO EL NOMBRE, NI GRUPOS NI NOMBRES COMPLETOS, SOLO EL NOMBRE");
+                    teclado.nextLine();
+                    ruta = teclado.nextLine();
+                    try {
+                        buscarCancion(ruta);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
+                    }
 
                     break;
-
                 case 3:
 
                     break;
@@ -99,29 +139,54 @@ public class PracticaMP3Ficheros {
 
     public static void recorrerSubdirectorio(String rutaOriginal, String nomCarpeta) {
         long skip2;
-        String datos, titulo;
+        String datos;
         DataInputStream in;
         DataOutputStream out;
         File nuevoDirectorio = new File(rutaOriginal + "/" + nomCarpeta);
-        System.out.println("He entrado en " + nuevoDirectorio.getAbsolutePath());
+        //System.out.println("He entrado en " + nuevoDirectorio.getAbsolutePath());
 
         File[] listaArchivosSubdirectorio = nuevoDirectorio.listFiles();
         for (int i = 0; i < listaArchivosSubdirectorio.length; i++) {
             if (listaArchivosSubdirectorio[i].isDirectory() && !listaArchivosSubdirectorio[i].isHidden()) {
-                System.out.println(listaArchivosSubdirectorio[i].getName());
+                //System.out.println(listaArchivosSubdirectorio[i].getName());
                 recorrerSubdirectorio(nuevoDirectorio.getAbsolutePath(), listaArchivosSubdirectorio[i].getName());
             }
             if (listaArchivosSubdirectorio[i].isFile()) {
-                System.out.println("fichero encontrado" + "\t" + listaArchivosSubdirectorio[i].getName());
+                // System.out.println("fichero encontrado" + "\t" + listaArchivosSubdirectorio[i].getName());
                 if (obtenerFormato(listaArchivosSubdirectorio[i].getName()).equalsIgnoreCase("3pm")) {
-                    System.out.println("Y ADEMAS FORMATO MP3, WOMBO COMBOOOOO!!!");
                     skip2 = (listaArchivosSubdirectorio[i].length() - 125);
                     try {
                         in = new DataInputStream(new FileInputStream(listaArchivosSubdirectorio[i]));
                         in.skip(skip2);
                         datos = in.readLine();
-                        titulo = datos.substring(0, 30);
-                        System.out.println(titulo);
+                        PrintWriter escritura = new PrintWriter(new FileOutputStream("catalogo.csv", true));
+                        String titulo = datos.substring(0, 30);
+                        if (titulo.isEmpty()) {
+                            titulo = "DESCONOCIDO";
+                        }
+                        String artista = datos.substring(30, 60);
+                        if (artista.isEmpty()) {
+                            artista = "DESCONOCIDO";
+                        }
+                        String album = datos.substring(60, 90);
+                        if (album.isEmpty()) {
+                            album = "DESCONOCIDO";
+                        }
+                        String anyo = datos.substring(90, 94);
+                        if (anyo.isEmpty() || anyo.equalsIgnoreCase(" ")) {
+                            anyo = "DESCONOCIDO";
+                        }
+                        String coment = datos.substring(94, 124);
+                        if (coment.isEmpty()) {
+                            coment = "DESCONOCIDO";
+                        }
+                        String genero = datos.substring(125);
+                        if (genero.isEmpty()) {
+                            genero = "DESCONOCIDO";
+                        }
+                        escritura.append(listaArchivosSubdirectorio[i].getAbsolutePath() + ";" + listaArchivosSubdirectorio[i].getParent() + ";" + titulo + ";" + artista + ";" + album + ";" + anyo + ";" + coment + ";" + genero + ";");
+                        escritura.close();
+                        System.out.println("Escrito exitosamente en archivo");
 
                     } catch (FileNotFoundException ex) {
                         Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
@@ -147,6 +212,36 @@ public class PracticaMP3Ficheros {
         }
 
         return res;
+    }
+
+    public static void buscarCancion(String nombre) throws FileNotFoundException {
+
+        Scanner sc = new Scanner(new File("catalogo.csv"));
+        String[] palabras;
+        ArrayList<String[]> raidBoss = new ArrayList<>();
+        String linea = "", campo;
+        int contCampos = 0;
+        int i = 0;
+
+        while (sc.hasNext()) {
+            contCampos++;
+            campo = sc.next();
+            linea += campo;
+            palabras = linea.split(";");
+            if (palabras.length == 8) {
+                if (palabras[2].trim().equalsIgnoreCase(nombre)) {
+                    System.out.println("HAY COINCIDENCIA");
+                    for (int j = 0; j < palabras.length; j++) {
+                        System.out.println(palabras[j].trim());
+                    }
+                }
+                linea = "";
+            }
+
+        }
+
+        sc.close();
+
     }
 
 }
