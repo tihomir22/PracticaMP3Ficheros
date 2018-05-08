@@ -236,6 +236,7 @@ public class PracticaMP3Ficheros {
                     }
                 }
                 linea = "";
+                palabras=null;
             }
 
         }
