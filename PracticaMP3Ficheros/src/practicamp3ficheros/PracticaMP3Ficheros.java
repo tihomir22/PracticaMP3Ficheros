@@ -40,7 +40,7 @@ public class PracticaMP3Ficheros {
         Scanner teclado = new Scanner(System.in);
 
         File eliminar = new File("catalogo.csv");
-        eliminar.delete();
+        eliminar.deleteOnExit();
         do {
             mostrarMenu();
             opcion = teclado.nextInt();
@@ -94,7 +94,8 @@ public class PracticaMP3Ficheros {
 
                                         escritura.append(listaFich[i].getAbsolutePath() + ";" + listaFich[i].getParent() + ";" + titulo + ";" + artista + ";" + album + ";" + anyo + ";" + coment + ";" + genero + ";");
                                         escritura.close();
-                                        System.out.println("Escrito exitosamente en archivo");
+
+                                        System.out.println("Cancion " + titulo.trim() + " escrita exitosamente en fichero");
                                     } catch (FileNotFoundException ex) {
                                         Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
                                     } catch (IOException ex) {
@@ -120,12 +121,17 @@ public class PracticaMP3Ficheros {
                     }
 
                     break;
-                case 3:
-
-                    break;
+                case 3: {
+                    try {
+                        buscarCancion("");
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                break;
 
             }
-        } while (opcion != 0);
+        } while (opcion != 4);
 
     }
 
@@ -186,7 +192,7 @@ public class PracticaMP3Ficheros {
                         }
                         escritura.append(listaArchivosSubdirectorio[i].getAbsolutePath() + ";" + listaArchivosSubdirectorio[i].getParent() + ";" + titulo + ";" + artista + ";" + album + ";" + anyo + ";" + coment + ";" + genero + ";");
                         escritura.close();
-                        System.out.println("Escrito exitosamente en archivo");
+                        System.out.println("Cancion " + titulo.trim() + "escrita exitosamente en archivo");
 
                     } catch (FileNotFoundException ex) {
                         Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
@@ -216,33 +222,57 @@ public class PracticaMP3Ficheros {
 
     public static void buscarCancion(String nombre) throws FileNotFoundException {
 
-        Scanner sc = new Scanner(new File("catalogo.csv"));
-        String[] palabras;
-        ArrayList<String[]> raidBoss = new ArrayList<>();
-        String linea = "", campo;
-        int contCampos = 0;
-        int i = 0;
+        //Scanner sc = new Scanner(new File("catalogo.csv"));
+        DataInputStream lectura = new DataInputStream(new FileInputStream(new File("catalogo.csv")));
+        Vector palabras = new Vector();
+        String linea = "";
+        int i = 0, cInt = 0;
+        while (cInt != -1) {
+            try {
+                cInt = lectura.read();
+                if ((char) cInt == ';') {
+                    linea = (linea.trim());
+                    palabras.add(i, linea);
+                    //System.out.println("Palabra num " + i + " agregada al vector" + linea);
+                    i++;
+                    linea = "";
 
-        while (sc.hasNext()) {
-            contCampos++;
-            campo = sc.next();
-            linea += campo;
-            palabras = linea.split(";");
-            if (palabras.length == 8) {
-                if (palabras[2].trim().equalsIgnoreCase(nombre)) {
-                    System.out.println("HAY COINCIDENCIA");
-                    for (int j = 0; j < palabras.length; j++) {
-                        System.out.println(palabras[j].trim());
+                } else {
+                    linea += ((char) cInt);
+                }
+
+            } catch (IOException ex) {
+                Logger.getLogger(PracticaMP3Ficheros.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        try {
+            if (!nombre.isEmpty()) {
+                for (int j = 0; j < palabras.size(); j++) {
+
+                    if (palabras.get(j).equals(nombre)) {
+                        // System.out.println("Comparamos" + palabras.get(j + 2) + " con " + nombre);
+                        System.out.println("************************************");
+                        for (int k = 7; k > 0; k--) {
+                            System.out.println(palabras.get(j));
+                            j++;
+                        }
+                        System.out.println("************************************");
+                        break;
                     }
                 }
-                linea = "";
-                palabras=null;
+            } else {
+                for (int j = 0; j < palabras.size(); j++) {
+                    System.out.println("************************************");
+                    for (int k = 7; k > 0; k--) {
+                        System.out.println(palabras.get(j));
+                        j++;
+                    }
+                    System.out.println("************************************");
+                }
             }
-
+            lectura.close();
+        } catch (Exception e) {
+            System.out.println("Informacion sobre el archivo");
         }
-
-        sc.close();
-
     }
-
 }
